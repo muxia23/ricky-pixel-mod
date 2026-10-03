@@ -68,9 +68,18 @@ test('the pane lists tasks, recent calls and edited files', async ($, on) => {
   await $.tool.call({ tool: 'mcp__test__fail', input: {} })
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   const drawn = JSON.stringify(await ui.drawn()).replace(/"cells":"[^"]*"/, '')
-  expect(drawn).toContain('最近动作')
+  expect(drawn).toContain('✦ Recent')
   expect(drawn).toContain('✗')
   expect(drawn).toContain('test·fail')
-  expect(drawn).not.toContain('✦ 任务') // no tasks yet: hidden
+  expect(drawn).not.toContain('✦ Tasks') // no tasks yet: hidden
+  await ui.unmount()
+})
+
+test('the language option switches the words to Chinese', { options: { language: 'zh' } }, async ($, on) => {
+  mock.clock(on)
+  on('tool.call', () => ({ result: 'ok' }))
+  await $.tool.call({ tool: 'mcp__test__spell', input: {} })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(JSON.stringify(await ui.drawn())).toContain('✦ 最近动作')
   await ui.unmount()
 })

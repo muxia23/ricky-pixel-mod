@@ -14,6 +14,7 @@ import {
   TASK_TOOLS,
   toolLabel,
 } from './board'
+import { stringsFor } from './i18n'
 import { BAND_ROWS, bandScene, paneScene } from './scene'
 
 const PANE = 'ricky'
@@ -30,7 +31,6 @@ const activityAtom = atom({ plugin: 'ricky-pixel-mod', key: 'activity' } as cons
 const agentsAtom = atom({ plugin: 'ricky-pixel-mod', key: 'agents' } as const, [])
 const filesAtom = atom({ plugin: 'ricky-pixel-mod', key: 'files' } as const, [])
 
-const SPINNER_WORDS = ['Ricky 施法中', 'Ricky 摘星中', 'Ricky 追月中', 'Ricky 织梦中', 'Ricky 占星中']
 const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)] as T
 
 // What the timer needs synchronously. Anything a drawing reads lives in $.state.
@@ -41,7 +41,7 @@ const live = {
   inTurn: false,
   toolsRunning: 0,
   revert: undefined as { cancel: () => void } | undefined,
-  spinnerWord: 'Ricky 施法中',
+  spinnerWord: 'Ricky',
   cwd: '',
   hasClock: false, // an in-progress task or a running agent shows a ticking time
   pane: { cols: 0, isLive: false },
@@ -100,12 +100,15 @@ async function applyTaskTool($: EngineInterface, tool: string, input: Record<str
   await refreshClockFlag($)
 }
 
-export const register: Register = on => {
+export const register: Register = (on, options) => {
+  const t = stringsFor(options.language)
+  live.spinnerWord = t.spinnerWords[0] ?? 'Ricky'
+
   on('session.start', async ($, e, next) => {
     live.mood = (await read($, moodAtom)) as RickyMood
     live.cwd = await $.session.cwd()
     await refreshClockFlag($)
-    await $.command.register({ name: 'ricky', description: '打开 Ricky 的像素面板' })
+    await $.command.register({ name: 'ricky', description: t.commandDescription })
     void $.ui.open({ id: PANE, title: '✦ Ricky' })
 
     $.clock.every(TICK_MS, () => {
@@ -145,12 +148,12 @@ export const register: Register = on => {
 
   on('command.run', { command: 'ricky' }, async $ => {
     await $.ui.open({ id: PANE, title: '✦ Ricky' })
-    return { text: 'Ricky 来啦 ✦' }
+    return { text: t.commandReply }
   })
 
   on('turn.start', async ($, e, next) => {
     live.inTurn = true
-    live.spinnerWord = pick(SPINNER_WORDS)
+    live.spinnerWord = pick(t.spinnerWords)
     await setMood($, 'think')
     return next(e)
   })
@@ -255,7 +258,7 @@ export const register: Register = on => {
         {todos.length > 0 && (
           <Box flexDirection="column" marginTop={1} paddingX={1}>
             <Text>
-              <Text color={GOLD} bold>✦ 任务</Text>
+              <Text color={GOLD} bold>{t.tasks}</Text>
               {`  ${done}/${todos.length}  `}
               <Text color={PURPLE}>{bar.on}</Text>
               <Text color={LAVENDER}>{bar.off}</Text>
@@ -286,14 +289,14 @@ export const register: Register = on => {
         {agents.length > 0 && (
           <Box flexDirection="column" marginTop={1} paddingX={1}>
             <Text>
-              <Text color={GOLD} bold>✦ 子 agent</Text>
-              <Text dimColor>{`  ${agents.length} 个运行中`}</Text>
+              <Text color={GOLD} bold>{t.subagents}</Text>
+              <Text dimColor>{`  ${t.running(agents.length)}`}</Text>
             </Text>
             {agents.map(a => (
               <Box flexDirection="column" marginLeft={1} paddingLeft={1} borderStyle="single" borderColor={PURPLE}>
                 <Text wrap="truncate-end">
                   <Text color={PURPLE} bold>{a.type}</Text> {a.description}
-                  <Text dimColor>{`  ${formatElapsed(now - a.startedAt)} · ${a.calls} 次调用`}</Text>
+                  <Text dimColor>{`  ${formatElapsed(now - a.startedAt)} · ${t.calls(a.calls)}`}</Text>
                 </Text>
                 {a.current && (
                   <Text wrap="truncate-end">
@@ -307,7 +310,7 @@ export const register: Register = on => {
 
         {activity.length > 0 && (
           <Box flexDirection="column" marginTop={1} paddingX={1}>
-            <Text color={GOLD} bold>✦ 最近动作</Text>
+            <Text color={GOLD} bold>{t.recent}</Text>
             {[...activity].reverse().map(a => (
               <Text wrap="truncate-end">
                 <Text dimColor>{clock(a.at)}</Text>{' '}
@@ -327,14 +330,14 @@ export const register: Register = on => {
         {files.length > 0 && (
           <Box flexDirection="column" marginTop={1} paddingX={1}>
             <Text>
-              <Text color={GOLD} bold>✦ 改动文件</Text>
+              <Text color={GOLD} bold>{t.filesChanged}</Text>
               <Text dimColor>{`  ${files.length}`}</Text>
             </Text>
             {files.map(f => (
               <Text wrap="truncate-start">
                 {' '}
                 {f.path}{'  '}
-                {f.isNew && f.edits === 1 ? <Text color={PURPLE}>新建</Text> : <Text dimColor>{`改 ${f.edits} 次`}</Text>}
+                {f.isNew && f.edits === 1 ? <Text color={PURPLE}>{t.newFile}</Text> : <Text dimColor>{t.edits(f.edits)}</Text>}
               </Text>
             ))}
           </Box>
@@ -359,6 +362,6 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'TurnDuration' }, async ($, e) => {
     const { Text } = $.ui.resolve(e)
-    return <Text color={GOLD}>✦ Ricky 陪你施法了 {formatElapsed(e.props.durationMs)}</Text>
+    return <Text color={GOLD}>{t.turnDone(formatElapsed(e.props.durationMs))}</Text>
   })
 }
