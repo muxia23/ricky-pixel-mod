@@ -1,91 +1,181 @@
-# Ricky Pixel Mod ✦
+<div align="center">
 
-[简体中文](README.md) | **English**
+<img src="docs/banner.png" alt="Ricky Pixel Mod" width="100%">
 
-A pixel-art cat that lives in Claude Code. Ricky reacts to what Claude is doing: eyes closed and forehead star glowing while it thinks, wings flapping and stardust trailing while it calls tools, a happy squint when a turn finishes, and bristling fur when something fails.
+### A pixel cat that lives in Claude Code — and keeps an eye on your session.
 
-![Ricky in Claude Code](docs/hero-en.gif)
+<p>
+  <a href="https://code.claude.com/docs/en/plugins/mods/create"><img src="https://img.shields.io/badge/Claude_Code-mod-8a5cf0?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code mod"></a>
+  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.2.0-f5c542?style=for-the-badge" alt="version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/code-MIT-b79bff?style=for-the-badge" alt="license"></a>
+  <a href="https://github.com/muxia23/ricky-pixel-mod/stargazers"><img src="https://img.shields.io/github/stars/muxia23/ricky-pixel-mod?style=for-the-badge&color=2a1650&logo=github" alt="stars"></a>
+</p>
 
-## Features
+<p>
+  <a href="#-quick-start"><b>Quick start</b></a> ·
+  <a href="#-features"><b>Features</b></a> ·
+  <a href="#-moods"><b>Moods</b></a> ·
+  <a href="#%EF%B8%8F-options"><b>Options</b></a> ·
+  <a href="#-faq"><b>FAQ</b></a> ·
+  <a href="README.md"><b>简体中文</b></a>
+</p>
 
-- **Side pane**: a twinkling purple night sky with Ricky flying in the middle. Under the sky sits a practical dashboard:
-  - **✦ Tasks**: Claude's todo list with a progress bar; the item in progress shows how long it has been running
-  - **✦ Subagents**: each running subagent with its type, elapsed time, call count and what it is doing right now
-  - **✦ Recent**: the last 6 tool calls of the main thread, with › running, ✓ done, ✗ failed
-  - **✦ Files changed**: every file edited or created this session
+<img src="docs/hero-en.gif" alt="Ricky in Claude Code" width="100%">
 
-  Empty sections hide themselves.
-- **Band above the prompt**: a 24×24 Ricky who flies back and forth while Claude works
-- **Purple-gold theme**: the spinner reads "Ricky is stargazing…", and each turn ends with "✦ Ricky cast with you for 12s"
-- **English or Chinese**: switch with the `language` option
+</div>
 
-## Moods
+<br>
 
-| Claude is… | Ricky |
-| --- | --- |
-| idle | hovers, slowly flapping, blinking now and then |
-| thinking | eyes closed, forehead star glowing |
-| calling tools | flaps fast and scatters stardust |
-| done | happy squint |
-| failing | wide eyes, bristling |
+Ricky flies in a twinkling night sky beside your transcript and reacts to everything Claude does: eyes closed and forehead star glowing while it **thinks**, wings flapping and stardust trailing while it **calls tools**, a happy squint when a turn is **done**, and bristling fur when something **fails**. Under the sky, a dashboard shows your tasks, running subagents, recent tool calls and the files you've changed.
 
-![frames](docs/frames-32.png)
+## 🚀 Quick start
 
-## Install
-
-Requires Claude Code **2.1.287 or newer** (mods support) and a truecolor terminal.
+**1. Clone**
 
 ```bash
 git clone https://github.com/muxia23/ricky-pixel-mod ~/ricky-pixel-mod
+```
+
+**2. Load it** — for one session:
+
+```bash
 claude --plugin-dir ~/ricky-pixel-mod
 ```
 
-To load it in every session, add this to `~/.claude/settings.json`:
+or for every session, in `~/.claude/settings.json`:
 
 ```json
 { "env": { "CLAUDE_CODE_PLUGIN_DIRS": "~/ricky-pixel-mod" } }
 ```
 
-## Usage
+**3. Switch to fullscreen rendering** — inside Claude Code, run:
 
-- `/ricky` opens the pane
-- The pane docks on the right in fullscreen rendering (`/tui fullscreen`) at 110 columns or wider; otherwise it opens above the prompt
-- Collapse the band with `ctrl+x ctrl+a`
-- `/clear` empties the dashboard
+```
+/tui fullscreen
+```
 
-## Options
+> [!IMPORTANT]
+> The side pane only docks beside the transcript in **fullscreen rendering** with a terminal **110 columns or wider**. In the default renderer it opens above the prompt instead. Claude Code remembers the choice, so you only do this once; `/tui default` switches back.
 
-Open `/config` and find **Language** under ricky-pixel-mod:
+**4. Say hi** — the pane opens by itself on wide terminals, or any time with `/ricky`.
 
-| Value | Words |
+> [!NOTE]
+> Requires Claude Code **2.1.287+** (mods) and a **truecolor** terminal (Ghostty, iTerm2, WezTerm, Kitty, VS Code…).
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🌌 Night-sky pane
+A pixel sky that spans the pane's width, with twinkling stars, a golden crescent moon and a 32×32 Ricky that bobs, blinks and flies.
+
+</td>
+<td width="50%" valign="top">
+
+### 📋 Session dashboard
+**Tasks** with a progress bar · running **subagents** with what they're doing · the last 6 **tool calls** with ✓ / ✗ · **files changed**. Empty sections stay hidden.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+### 🐾 Band above the prompt
+A 24×24 Ricky that flies back and forth trailing stardust while Claude works, and rests while it doesn't.
+
+</td>
+<td width="50%" valign="top">
+
+### 💜 Purple-gold theme
+The spinner reads *"Ricky is stargazing…"*, and every turn ends with *"✦ Ricky cast with you for 12s"*. English or 简体中文.
+
+</td>
+</tr>
+</table>
+
+## 🐱 Moods
+
+<div align="center">
+<img src="docs/frames-32.png" alt="Ricky's frames" width="100%">
+</div>
+
+| When Claude is… | Ricky… |
 | --- | --- |
-| `en` (default) | English |
-| `zh` | 简体中文 |
+| idle | hovers, slowly flapping, blinking now and then |
+| thinking | closes its eyes; the forehead star glows |
+| calling tools | flaps fast and scatters stardust |
+| done | squints happily |
+| failing | goes wide-eyed and bristles |
 
-Or set it in `~/.claude/settings.json`:
+## ⚙️ Options
+
+Open `/config` and find **Language** under *ricky-pixel-mod*, or set it in `~/.claude/settings.json`:
 
 ```json
 { "pluginConfigs": { "ricky-pixel-mod": { "options": { "language": "zh" } } } }
 ```
 
-## Editing the sprites
+| `language` | Words |
+| --- | --- |
+| `en` *(default)* | English |
+| `zh` | 简体中文 |
 
-Ricky is drawn in `tools/sprites.py`: each frame is drawn as its left half and mirrored. After editing, run:
+## 🎨 Make Ricky yours
+
+Ricky is plain text: every frame in [`tools/sprites.py`](tools/sprites.py) is drawn as its left half and mirrored, one character per pixel. Change a few letters, then:
 
 ```bash
-python3 tools/sprites.py   # needs Pillow; writes hooks/sprites.ts and the docs/ previews
+python3 tools/sprites.py   # needs Pillow → hooks/sprites.ts + docs/ previews
+python3 tools/banner.py    # redraws the cover
 ```
 
-## Development
+With the folder loaded through `--plugin-dir`, Claude Code hot-reloads your changes as you save.
+
+## ❓ FAQ
+
+<details>
+<summary><b>The pane shows up above the prompt, not on the side.</b></summary>
+<br>
+Run <code>/tui fullscreen</code> and widen the terminal to at least 110 columns. Below 144 columns the pane doesn't open by itself; open it with <code>/ricky</code>.
+</details>
+
+<details>
+<summary><b>The colours look wrong or blocky.</b></summary>
+<br>
+Your terminal needs truecolor (24-bit) support; most modern terminals have it.
+</details>
+
+<details>
+<summary><b>The band is too tall.</b></summary>
+<br>
+Collapse it with <code>ctrl+x ctrl+a</code>; press it again to bring Ricky back.
+</details>
+
+<details>
+<summary><b>How do I clear the dashboard?</b></summary>
+<br>
+<code>/clear</code> starts a fresh conversation and empties it.
+</details>
+
+## 🛠 Development
 
 ```bash
-claude plugin validate .
-claude plugin test .
+claude plugin validate .   # what the engine sees and would refuse
+claude plugin test .       # the tests in hooks/*.test.tsx
 ```
 
-## License & disclaimer
+## 📜 License & disclaimer
 
-- **Code**: MIT License.
-- **Ricky's design** (the pixel data in `tools/sprites.py` and `hooks/sprites.ts`, and the images in `docs/`): fan art inspired by a VALORANT skin character. It is **not** covered by the MIT License and may only be used non-commercially under Riot Games' fan content policy. See [LICENSE](LICENSE).
+- **Code** — [MIT](LICENSE).
+- **Ricky's design** (the pixel data in `tools/sprites.py` and `hooks/sprites.ts`, and the images in `docs/`) — fan art inspired by a VALORANT skin character. It is **not** covered by the MIT License and may only be used non-commercially under Riot Games' fan content policy. See [LICENSE](LICENSE).
 
-Ricky Pixel Mod was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
+<sub>Ricky Pixel Mod was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</sub>
+
+<div align="center">
+<br>
+
+**If Ricky made your terminal a little cosier, a ⭐ would make Ricky's day.**
+
+</div>
