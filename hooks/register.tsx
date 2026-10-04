@@ -15,7 +15,8 @@ import {
   toolLabel,
 } from './board'
 import { stringsFor } from './i18n'
-import { BAND_ROWS, bandScene, paneScene } from './scene'
+import { BAND_ROWS, bandScene, bandSizeFor, paneScene } from './scene'
+import type { BandSize } from './scene'
 
 const PANE = 'ricky'
 const PANE_ROWS = 18
@@ -45,7 +46,7 @@ const live = {
   cwd: '',
   hasClock: false, // an in-progress task or a running agent shows a ticking time
   pane: { cols: 0, isLive: false },
-  band: undefined as { requestId: string; cols: number; isLive: boolean } | undefined,
+  band: undefined as { requestId: string; cols: number; size: BandSize; isLive: boolean } | undefined,
 }
 
 async function setMood($: EngineInterface, next: RickyMood, holdMs?: number) {
@@ -102,6 +103,10 @@ async function applyTaskTool($: EngineInterface, tool: string, input: Record<str
 
 export const register: Register = (on, options) => {
   const t = stringsFor(options.language)
+  // the band's largest Ricky; `auto` and `large` start at 24 and step down to fit
+  const bandPref = options.bandSize
+  const preferredBand: BandSize | undefined =
+    bandPref === 'off' ? undefined : bandPref === 'small' ? 8 : bandPref === 'medium' ? 16 : 24
   live.spinnerWord = t.spinnerWords[0] ?? 'Ricky'
 
   on('session.start', async ($, e, next) => {
@@ -125,7 +130,7 @@ export const register: Register = (on, options) => {
       const b = live.band
       if (b?.isLive) {
         void $.ui
-          .blit({ requestId: b.requestId, key: 'ribbon', cells: bandScene(b.cols, live.mood, live.tick) })
+          .blit({ requestId: b.requestId, key: 'ribbon', cells: bandScene(b.cols, live.mood, live.tick, b.size) })
           .then(r => {
             if (r.deny) b.isLive = false
           })
@@ -349,11 +354,16 @@ export const register: Register = (on, options) => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (e.props.hasSurvey || e.surface !== 'terminal') return next(e)
     const { Raster } = $.ui.resolve(e)
-    const cols = Math.max(26, e.props.bodyColumns - 2)
-    live.band = { requestId: e.requestId, cols, isLive: true }
+    const size = preferredBand && bandSizeFor(preferredBand, e.props.maxRows)
+    if (!size) {
+      live.band = undefined
+      return next(e)
+    }
+    const cols = Math.max(size + 2, e.props.bodyColumns - 2)
+    live.band = { requestId: e.requestId, cols, size, isLive: true }
     const m = (await read($, moodAtom)) as RickyMood
 
-    return <Raster key="ribbon" columns={cols} rows={BAND_ROWS} cells={bandScene(cols, m, live.tick)} />
+    return <Raster key="ribbon" columns={cols} rows={BAND_ROWS[size]} cells={bandScene(cols, m, live.tick, size)} />
   })
 
   on('ui.render', { component: 'Spinner' }, ($, e, next) =>

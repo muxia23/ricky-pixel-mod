@@ -2,7 +2,8 @@
 
 Each frame is drawn as the LEFT half and mirrored, then the asymmetric
 details (moon tail, forehead star) are overlaid.
-  32x32 frames: the side pane.   24x24 frames: the band above the prompt.
+  32x32 frames: the side pane.
+  24x24, 16x16 and 8x6 frames: the band above the prompt, by the room it has.
 
 Run (needs Pillow): python3 tools/sprites.py
   -> hooks/sprites.ts, docs/frames-32.png, docs/frames-24.png
@@ -255,6 +256,77 @@ FRAMES24 = {
 }
 
 
+# ---- 16x16 and 8x6 (band, when there is less room) --------------------------
+S16_TOP = [
+    "........",  # 0
+    "..K.....",  # 1
+    ".KEK....",  # 2
+    ".KEPKKKG",  # 3
+    "KPPPPPGY",  # 4
+    "KPPPPPPG",  # 5
+]
+S16_EYES = {  # rows 6-8
+    'open':  ["KPWBPPPP", "KPBBPPPP", "KEbbPPPW"],
+    'shut':  ["KPPPPPPP", "KPBBBPPP", "KEPPPPPW"],
+    'happy': ["KPPBPPPP", "KPBPBPPP", "KEPPPPPW"],
+    'shock': ["KWWWPPPP", "KWBWPPPP", "KEWWPPPW"],
+}
+S16_BOTTOM = [
+    ".KPPPWMW",  # 9
+    "..KPWWWM",  # 10
+    "...KWWWW",  # 11
+    "...KPWWW",  # 12
+    "...KPPPP",  # 13
+    "...KDPKP",  # 14
+    "...KWK..",  # 15
+]
+S16_WINGS = {
+    'up':   {9: "c.......", 10: "Cc......", 11: "CCc.....", 12: ".cC....."},
+    'down': {12: ".cC.....", 13: "cCC.....", 14: "Cc......", 15: "c......."},
+}
+
+
+def build16(eyes, wings, star_bright=False):
+    rows = S16_TOP + S16_EYES[eyes] + S16_BOTTOM
+    assert len(rows) == 16 and all(len(r) == 8 for r in rows), rows
+    grid = [list(mirror(r)) for r in rows]
+    for r, line in S16_WINGS[wings].items():
+        for c, ch in enumerate(mirror(line)):
+            if ch != '.' and grid[r][c] == '.':
+                grid[r][c] = ch
+    if star_bright:
+        for (r, c) in [(3, 7), (3, 8), (4, 7), (4, 8)]:
+            grid[r][c] = 'W'
+    for (r, c, ch) in [(0, 1, 'G'), (1, 0, 'G'), (2, 0, 'G'), (3, 0, 'G'), (4, 1, 'G')]:  # crescent moon, top-left
+        if grid[r][c] == '.':
+            grid[r][c] = ch
+    return [''.join(r) for r in grid]
+
+
+FRAMES16 = {
+    'idle':   build16('open', 'up'),
+    'idle2':  build16('open', 'down'),
+    'blink':  build16('shut', 'up'),
+    'think':  build16('shut', 'up', star_bright=True),
+    'think2': build16('shut', 'down'),
+    'happy':  build16('happy', 'up'),
+    'happy2': build16('happy', 'down'),
+    'shock':  build16('shock', 'up'),
+}
+
+# just the head, 8x6
+S8 = {
+    'open':  ['.K....K.', 'KEK..KEK', 'KPPGGPPK', 'KBPPPPBK', 'KPPWWPPK', '.KKKKKK.'],
+    'shut':  ['.K....K.', 'KEK..KEK', 'KPPGGPPK', 'KPPPPPPK', 'KBBWWBBK', '.KKKKKK.'],
+    'happy': ['.K....K.', 'KEK..KEK', 'KPPGGPPK', 'KBPPPPBK', 'KPWMMWPK', '.KKKKKK.'],
+    'shock': ['.K....K.', 'KEK..KEK', 'KPPGGPPK', 'KWPPPPWK', 'KPPMMPPK', '.KKKKKK.'],
+}
+FRAMES8 = {
+    'idle': S8['open'], 'idle2': S8['open'], 'blink': S8['shut'], 'think': S8['shut'], 'think2': S8['shut'],
+    'happy': S8['happy'], 'happy2': S8['open'], 'shock': S8['shock'],
+}
+
+
 def render_png(frames, path, scale=8):
     names = list(frames)
     H = len(next(iter(frames.values())))
@@ -285,10 +357,11 @@ def write_ts(frames, path):
     for n, rows in frames.items():
         body += f'  {n}: [\n' + ''.join(f'    {json.dumps(r)},\n' for r in rows) + '  ],\n'
     body += '} as const\n\nexport type FrameName = keyof typeof FRAMES\n'
-    body += '\nexport const FRAMES24 = {\n'
-    for n, rows in FRAMES24.items():
-        body += f'  {n}: [\n' + ''.join(f'    {json.dumps(r)},\n' for r in rows) + '  ],\n'
-    body += '} as const\n'
+    for name, table in [('FRAMES24', FRAMES24), ('FRAMES16', FRAMES16), ('FRAMES8', FRAMES8)]:
+        body += f'\nexport const {name} = {{\n'
+        for n, rows in table.items():
+            body += f'  {n}: [\n' + ''.join(f'    {json.dumps(r)},\n' for r in rows) + '  ],\n'
+        body += '} as const\n'
     with open(path, 'w') as f:
         f.write(body)
 
@@ -298,5 +371,6 @@ if __name__ == '__main__':
     os.makedirs(os.path.join(root, 'docs'), exist_ok=True)
     render_png(FRAMES, os.path.join(root, 'docs', 'frames-32.png'))
     render_png(FRAMES24, os.path.join(root, 'docs', 'frames-24.png'), scale=10)
+    render_png(FRAMES16, os.path.join(root, 'docs', 'frames-16.png'), scale=12)
     write_ts(FRAMES, sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, 'hooks', 'sprites.ts'))
     print('ok', list(FRAMES))

@@ -1,7 +1,7 @@
 import { expect, mock, test } from 'claude-code/testing'
 
 import { applyTodoWrite, detailOf, noteEdit, progressBar, relPath } from './board'
-import { bandScene, base64, BAND_ROWS, frameFor, paneScene } from './scene'
+import { bandScene, bandSizeFor, base64, BAND_ROWS, frameFor, paneScene } from './scene'
 
 const PANE = {
   plugin: 'ricky-pixel-mod',
@@ -27,7 +27,9 @@ test('base64 matches the standard encoding', async () => {
 test('scenes pack exactly columns * rows cells', async () => {
   // 3 u32 per cell -> 12 bytes -> 16 base64 chars per cell
   expect(paneScene(40, 18, 'idle', 0).length).toBe(40 * 18 * 16)
-  expect(bandScene(30, 'fly', 7).length).toBe(30 * BAND_ROWS * 16)
+  for (const size of [24, 16, 8] as const) {
+    expect(bandScene(30, 'fly', 7, size).length).toBe(30 * BAND_ROWS[size] * 16)
+  }
 })
 
 test('each mood has its frames', async () => {
@@ -81,5 +83,43 @@ test('the language option switches the words to Chinese', { options: { language:
   await $.tool.call({ tool: 'mcp__test__spell', input: {} })
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(JSON.stringify(await ui.drawn())).toContain('✦ 最近动作')
+  await ui.unmount()
+})
+
+test('the band picks the biggest Ricky that fits', async () => {
+  expect(bandSizeFor(24, 30)).toBe(24)
+  expect(bandSizeFor(24, 10)).toBe(16)
+  expect(bandSizeFor(24, 5)).toBe(8)
+  expect(bandSizeFor(24, 2)).toBeUndefined()
+  expect(bandSizeFor(16, 30)).toBe(16)
+  expect(bandSizeFor(8, 30)).toBe(8)
+})
+
+const BAND = (maxRows: number) =>
+  ({
+    plugin: 'ricky-pixel-mod',
+    component: 'AbovePrompt',
+    props: { hasSurvey: false, isWorking: false, maxRows, bodyColumns: 80, scroll: { offset: 0, bodyRows: maxRows }, view: {} },
+  }) as const
+
+test('a short window gets a smaller band', async ($, on) => {
+  mock.clock(on)
+  const tall = await $.ui.mount({ ...BAND(20), surface: 'terminal' })
+  expect((await tall.find({ key: 'ribbon' }))?.props).toMatchObject({ rows: 12 })
+  await tall.unmount()
+  const short = await $.ui.mount({ ...BAND(9), surface: 'terminal' })
+  expect((await short.find({ key: 'ribbon' }))?.props).toMatchObject({ rows: 8 })
+  await short.unmount()
+})
+
+test('bandSize off hides the band', { options: { bandSize: 'off' } }, async ($, on) => {
+  mock.clock(on)
+  // what the engine draws when the plugin passes: an empty band
+  on('ui.render', ($, e) => {
+    const { Box } = $.ui.resolve(e)
+    return <Box key="engine" />
+  })
+  const ui = await $.ui.mount({ ...BAND(20), surface: 'terminal' })
+  expect(await ui.find({ key: 'ribbon' })).toBeUndefined()
   await ui.unmount()
 })

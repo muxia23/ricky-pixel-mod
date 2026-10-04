@@ -6,7 +6,7 @@
 
 <p>
   <a href="https://code.claude.com/docs/en/plugins/mods/create"><img src="https://img.shields.io/badge/Claude_Code-mod-8a5cf0?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code mod"></a>
-  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.2.0-f5c542?style=for-the-badge" alt="version"></a>
+  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.3.0-f5c542?style=for-the-badge" alt="version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/code-MIT-b79bff?style=for-the-badge" alt="license"></a>
   <a href="https://github.com/muxia23/ricky-pixel-mod/stargazers"><img src="https://img.shields.io/github/stars/muxia23/ricky-pixel-mod?style=for-the-badge&color=2a1650&logo=github" alt="stars"></a>
 </p>
@@ -83,7 +83,7 @@ A pixel sky that spans the pane's width, with twinkling stars, a golden crescent
 <td width="50%" valign="top">
 
 ### 🐾 Band above the prompt
-A 24×24 Ricky that flies back and forth trailing stardust while Claude works, and rests while it doesn't.
+A smaller Ricky that flies back and forth trailing stardust while Claude works. It **sizes itself to the room it has** — 24px, 16px, or just the 8px head — so it never gets cut off in a short window.
 
 </td>
 <td width="50%" valign="top">
@@ -111,16 +111,16 @@ The spinner reads *"Ricky is stargazing…"*, and every turn ends with *"✦ Ric
 
 ## ⚙️ Options
 
-Open `/config` and find **Language** under *ricky-pixel-mod*, or set it in `~/.claude/settings.json`:
+Open `/config` and find them under *ricky-pixel-mod*, or set them in `~/.claude/settings.json`:
 
 ```json
-{ "pluginConfigs": { "ricky-pixel-mod": { "options": { "language": "zh" } } } }
+{ "pluginConfigs": { "ricky-pixel-mod": { "options": { "language": "zh", "bandSize": "small" } } } }
 ```
 
-| `language` | Words |
+| Option | Values |
 | --- | --- |
-| `en` *(default)* | English |
-| `zh` | 简体中文 |
+| **`language`** | `en` *(default)* English · `zh` 简体中文 |
+| **`bandSize`** | `auto` *(default)* the biggest Ricky that fits · `large` / `medium` / `small` cap it at 24 / 16 / 8 px · `off` no band |
 
 ## 🎨 Make Ricky yours
 
@@ -150,7 +150,7 @@ Your terminal needs truecolor (24-bit) support; most modern terminals have it.
 <details>
 <summary><b>The band is too tall.</b></summary>
 <br>
-Collapse it with <code>ctrl+x ctrl+a</code>; press it again to bring Ricky back.
+By default it already shrinks to fit. To keep it small for good, set <code>bandSize</code> to <code>small</code> (or <code>off</code>) in <code>/config</code>. To hide it for a moment, collapse it with <code>ctrl+x ctrl+a</code>.
 </details>
 
 <details>

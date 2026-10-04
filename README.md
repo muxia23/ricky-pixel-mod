@@ -6,7 +6,7 @@
 
 <p>
   <a href="https://code.claude.com/docs/en/plugins/mods/create"><img src="https://img.shields.io/badge/Claude_Code-mod-8a5cf0?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code mod"></a>
-  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.2.0-f5c542?style=for-the-badge" alt="version"></a>
+  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.3.0-f5c542?style=for-the-badge" alt="version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/code-MIT-b79bff?style=for-the-badge" alt="license"></a>
   <a href="https://github.com/muxia23/ricky-pixel-mod/stargazers"><img src="https://img.shields.io/github/stars/muxia23/ricky-pixel-mod?style=for-the-badge&color=2a1650&logo=github" alt="stars"></a>
 </p>
@@ -83,7 +83,7 @@ claude --plugin-dir ~/ricky-pixel-mod
 <td width="50%" valign="top">
 
 ### 🐾 输入框上方横栏
-24×24 的小 Ricky，Claude 工作时拖着星尘来回飞，空闲时停下休息。
+小号 Ricky，Claude 工作时拖着星尘来回飞。它会**根据剩余空间自动选大小**：24 像素、16 像素，或者只露一个 8 像素的头，窗口再小也不会被截断。
 
 </td>
 <td width="50%" valign="top">
@@ -111,16 +111,16 @@ claude --plugin-dir ~/ricky-pixel-mod
 
 ## ⚙️ 选项
 
-默认是英文。在 `/config` 里找到 *ricky-pixel-mod* 的 **Language**，或者在 `~/.claude/settings.json` 里设置：
+在 `/config` 里找到 *ricky-pixel-mod* 下的选项，或者在 `~/.claude/settings.json` 里设置：
 
 ```json
-{ "pluginConfigs": { "ricky-pixel-mod": { "options": { "language": "zh" } } } }
+{ "pluginConfigs": { "ricky-pixel-mod": { "options": { "language": "zh", "bandSize": "small" } } } }
 ```
 
-| `language` | 语言 |
+| 选项 | 可选值 |
 | --- | --- |
-| `en`（默认） | English |
-| `zh` | 简体中文 |
+| **`language`** | `en`（默认）English · `zh` 简体中文 |
+| **`bandSize`** | `auto`（默认）自动选能放下的最大尺寸 · `large` / `medium` / `small` 最大 24 / 16 / 8 像素 · `off` 关闭横栏 |
 
 ## 🎨 打造你自己的 Ricky
 
@@ -150,7 +150,7 @@ python3 tools/banner.py    # 重画封面
 <details>
 <summary><b>横栏太占地方。</b></summary>
 <br>
-按 <code>ctrl+x ctrl+a</code> 折叠，再按一次 Ricky 就回来了。
+默认已经会根据空间自动缩小。想一直保持小号，在 <code>/config</code> 里把 <code>bandSize</code> 设成 <code>small</code>（或 <code>off</code> 关闭）；只想临时收起，按 <code>ctrl+x ctrl+a</code>。
 </details>
 
 <details>

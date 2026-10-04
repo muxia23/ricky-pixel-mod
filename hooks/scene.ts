@@ -1,5 +1,5 @@
 // Pure pixel drawing: no `$` here, so it is testable and cheap to call per tick.
-import { FRAMES, FRAMES24, PALETTE, SPRITE_H, SPRITE_W } from './sprites'
+import { FRAMES, FRAMES8, FRAMES16, FRAMES24, PALETTE, SPRITE_H, SPRITE_W } from './sprites'
 import type { FrameName } from './sprites'
 import type { RickyMood } from '../types'
 
@@ -12,14 +12,28 @@ const DECODED = {} as Record<FrameName, (number | null)[][]>
 for (const name of Object.keys(FRAMES) as FrameName[]) {
   DECODED[name] = FRAMES[name].map(row => [...row].map(ch => PALETTE[ch] ?? null))
 }
-// the band's smaller 24x24 Ricky, same frame names
-const BAND_SIZE = 24
-const DECODED24 = {} as Record<FrameName, (number | null)[][]>
-for (const name of Object.keys(FRAMES24) as FrameName[]) {
-  DECODED24[name] = FRAMES24[name].map(row => [...row].map(ch => PALETTE[ch] ?? null))
+// the band's smaller Rickys, same frame names: 24x24, 16x16, and an 8x6 head
+export type BandSize = 24 | 16 | 8
+const decode = (table: Record<FrameName, readonly string[]>) => {
+  const out = {} as Record<FrameName, (number | null)[][]>
+  for (const name of Object.keys(table) as FrameName[]) {
+    out[name] = table[name].map(row => [...row].map(ch => PALETTE[ch] ?? null))
+  }
+  return out
+}
+const BAND_FRAMES: Record<BandSize, Record<FrameName, (number | null)[][]>> = {
+  24: decode(FRAMES24),
+  16: decode(FRAMES16),
+  8: decode(FRAMES8),
+}
+/** Terminal rows each band size takes (two pixels per row). */
+export const BAND_ROWS: Record<BandSize, number> = { 24: 12, 16: 8, 8: 3 }
+
+/** The biggest size no bigger than `preferred` that fits `maxRows`, or none. */
+export function bandSizeFor(preferred: BandSize, maxRows: number): BandSize | undefined {
+  return ([24, 16, 8] as const).find(s => s <= preferred && BAND_ROWS[s] <= maxRows)
 }
 
-export const BAND_ROWS = 12
 const GOLD = 0xf5c542
 const STAR_COLORS = [0xffe89a, 0xf4f0ff, 0xb79bff]
 
@@ -152,27 +166,29 @@ export function paneScene(cols: number, rows: number, mood: RickyMood, tick: num
   return toCells(c)
 }
 
-/** The band: a see-through ribbon `cols` wide with the 24px Ricky; she flies across while working. */
-export function bandScene(cols: number, mood: RickyMood, tick: number): string {
+/** The band: a see-through ribbon `cols` wide with a `size`-px Ricky; it flies across while working. */
+export function bandScene(cols: number, mood: RickyMood, tick: number, size: BandSize = 24): string {
+  const sprite = BAND_FRAMES[size][frameFor(mood, tick)]
+  const spriteW = sprite[0]?.length ?? size
   const w = cols
-  const h = BAND_ROWS * 2
+  const h = BAND_ROWS[size] * 2
   const c = canvas(w, h, null)
-  const span = Math.max(0, w - BAND_SIZE - 2)
+  const span = Math.max(0, w - spriteW - 2)
   let x = 1
   if ((mood === 'fly' || mood === 'think') && span > 0) {
     const p = tick % (span * 2)
     const forward = p < span
     x = 1 + (forward ? p : span * 2 - p) // fly back and forth
-    const tail = forward ? x - 2 : x + BAND_SIZE + 1
+    const tail = forward ? x - 2 : x + spriteW + 1
     const behind = forward ? -1 : 1
     for (let k = 0; k < 8; k++) {
-      // a trail of sparkles behind her
+      // a trail of sparkles behind
       if ((tick + k) % 3 === 0) continue
-      put(c, tail + behind * k * 2, 10 + ((k * 5 + tick) % 10), k % 2 ? GOLD : 0xb79bff)
+      put(c, tail + behind * k * 2, Math.floor(h * 0.4) + ((k * 5 + tick) % Math.max(1, Math.floor(h * 0.4))), k % 2 ? GOLD : 0xb79bff)
     }
   } else if (mood === 'shock') {
     x = 1 + (tick % 2)
   }
-  stamp(c, DECODED24[frameFor(mood, tick)], x, 0)
+  stamp(c, sprite, x, 0)
   return toCells(c)
 }
