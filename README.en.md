@@ -24,6 +24,8 @@
 
 </div>
 
+https://github.com/user-attachments/assets/933e4bd2-e972-463a-98bb-80116958b3dc
+
 <br>
 
 Ricky flies in a twinkling night sky beside your transcript and reacts to everything Claude does: eyes closed and forehead star glowing while it **thinks**, wings flapping and stardust trailing while it **calls tools**, a happy squint when a turn is **done**, and bristling fur when something **fails**. Under the sky, a dashboard shows your tasks, running subagents, recent tool calls and the files you've changed.
