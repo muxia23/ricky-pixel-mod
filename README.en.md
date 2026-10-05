@@ -6,7 +6,7 @@
 
 <p>
   <a href="https://code.claude.com/docs/en/plugins/mods/create"><img src="https://img.shields.io/badge/Claude_Code-mod-8a5cf0?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code mod"></a>
-  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.4.0-f5c542?style=for-the-badge" alt="version"></a>
+  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.4.1-f5c542?style=for-the-badge" alt="version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/code-MIT-b79bff?style=for-the-badge" alt="license"></a>
   <a href="https://github.com/muxia23/ricky-pixel-mod/stargazers"><img src="https://img.shields.io/github/stars/muxia23/ricky-pixel-mod?style=for-the-badge&color=2a1650&logo=github" alt="stars"></a>
 </p>

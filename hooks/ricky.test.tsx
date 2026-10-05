@@ -134,3 +134,15 @@ test('colors dark brightens the dashboard', { options: { colors: 'dark' } }, asy
   expect(drawn).not.toContain('#c99a12')
   await ui.unmount()
 })
+
+test('a background subagent keeps its card until its own turn completes', async ($, on) => {
+  mock.clock(on)
+  on('tool.call', () => ({ result: { status: 'async_launched', agentId: 'bg-1', description: 'd', prompt: 'p', outputFile: 'o' } }))
+  on('turn.complete', () => ({ text: '' }))
+  await $.tool.call({ tool: 'Agent', input: { description: 'd', prompt: 'p', run_in_background: true } })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(JSON.stringify(await ui.drawn())).toContain('✦ Subagents') // still running after the Agent call returned
+  await $.turn.complete({ agentId: 'bg-1', answer: '', durationMs: 1, isAborted: false, turnId: 't', reason: 'answer' })
+  expect(JSON.stringify(await ui.drawn())).not.toContain('✦ Subagents')
+  await ui.unmount()
+})

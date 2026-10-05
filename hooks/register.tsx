@@ -246,7 +246,13 @@ export const register: Register = (on, options) => {
       )
     }
     if (isMain && e.tool === 'Agent') {
-      await update($, agentsAtom, list => ((list ?? []) as RickyAgent[]).filter(c => c.id !== id))
+      // a background subagent is still running: keep its card until its own turn completes
+      const launched = ('result' in ran ? ran.result : undefined) as { status?: string; agentId?: string } | undefined
+      const bgId = !ran.isError && launched?.status === 'async_launched' ? launched.agentId : undefined
+      await update($, agentsAtom, list => {
+        const cards = (list ?? []) as RickyAgent[]
+        return bgId ? cards.map(c => (c.id === id ? { ...c, agentId: bgId } : c)) : cards.filter(c => c.id !== id)
+      })
       await refreshClockFlag($)
     }
     if (!ran.isError && TASK_TOOLS.has(e.tool)) await applyTaskTool($, e.tool, input, 'result' in ran ? ran.result : undefined)
@@ -261,7 +267,12 @@ export const register: Register = (on, options) => {
   })
 
   on('turn.complete', async ($, e, next) => {
-    if (e.agentId) return next(e)
+    if (e.agentId) {
+      // a subagent finished: drop its card (a background one outlives its Agent call)
+      await update($, agentsAtom, list => ((list ?? []) as RickyAgent[]).filter(c => c.agentId !== e.agentId))
+      await refreshClockFlag($)
+      return next(e)
+    }
     live.inTurn = false
     live.toolsRunning = 0
     if (e.reason === 'answer') await setMood($, 'happy', 4000)
