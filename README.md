@@ -6,7 +6,7 @@
 
 <p>
   <a href="https://code.claude.com/docs/en/plugins/mods/create"><img src="https://img.shields.io/badge/Claude_Code-mod-8a5cf0?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code mod"></a>
-  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.3.0-f5c542?style=for-the-badge" alt="version"></a>
+  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.4.0-f5c542?style=for-the-badge" alt="version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/code-MIT-b79bff?style=for-the-badge" alt="license"></a>
   <a href="https://github.com/muxia23/ricky-pixel-mod/stargazers"><img src="https://img.shields.io/github/stars/muxia23/ricky-pixel-mod?style=for-the-badge&color=2a1650&logo=github" alt="stars"></a>
 </p>
@@ -123,6 +123,7 @@ claude --plugin-dir ~/ricky-pixel-mod
 | --- | --- |
 | **`language`** | `en`（默认）English · `zh` 简体中文 |
 | **`bandSize`** | `auto`（默认）自动选能放下的最大尺寸 · `large` / `medium` / `small` 最大 24 / 16 / 8 像素 · `off` 关闭横栏 |
+| **`colors`** | `auto`（默认）跟随 Claude Code 主题，深色主题用更亮的配色；主题是 *Auto (match terminal)* 时读取 macOS 的深浅色设置 · `light` / `dark` 固定用浅色 / 深色背景的配色 |
 
 ## 🎨 打造你自己的 Ricky
 
@@ -153,6 +154,12 @@ python3 tools/banner.py    # 重画封面
 <summary><b>横栏太占地方。</b></summary>
 <br>
 默认已经会根据空间自动缩小。想一直保持小号，在 <code>/config</code> 里把 <code>bandSize</code> 设成 <code>small</code>（或 <code>off</code> 关闭）；只想临时收起，按 <code>ctrl+x ctrl+a</code>。
+</details>
+
+<details>
+<summary><b>深色终端里颜色不对。</b></summary>
+<br>
+Ricky 默认跟随 Claude Code 的主题。如果终端是深色背景、主题却是 <code>light</code>，在 <code>/config</code> 里把 Theme 改成 <i>Auto (match terminal)</i> 或 <i>Dark mode</i>；也可以把 <code>colors</code> 直接设成 <code>dark</code>。
 </details>
 
 <details>

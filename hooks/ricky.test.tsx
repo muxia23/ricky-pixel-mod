@@ -123,3 +123,14 @@ test('bandSize off hides the band', { options: { bandSize: 'off' } }, async ($, 
   expect(await ui.find({ key: 'ribbon' })).toBeUndefined()
   await ui.unmount()
 })
+
+test('colors dark brightens the dashboard', { options: { colors: 'dark' } }, async ($, on) => {
+  mock.clock(on)
+  on('tool.call', () => ({ result: 'ok' }))
+  await $.tool.call({ tool: 'mcp__test__spell', input: {} })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  const drawn = JSON.stringify(await ui.drawn())
+  expect(drawn).toContain('#f5c542')
+  expect(drawn).not.toContain('#c99a12')
+  await ui.unmount()
+})

@@ -21,10 +21,9 @@ import type { BandSize } from './scene'
 const PANE = 'ricky'
 const PANE_ROWS = 18
 const TICK_MS = 200
-const GOLD = '#c99a12'
-const PURPLE = '#8a5cf0'
-const LAVENDER = '#e4dcff'
-const ROSE = '#d0457a'
+// text colours for a light and a dark background; `lavender` is the progress bar's empty part
+const LIGHT = { gold: '#c99a12', purple: '#8a5cf0', lavender: '#e4dcff', rose: '#d0457a' }
+const DARK = { gold: '#f5c542', purple: '#a98bff', lavender: '#3d3263', rose: '#ff6b8b' }
 
 const moodAtom = atom({ plugin: 'ricky-pixel-mod', key: 'mood' } as const, 'idle')
 const todosAtom = atom({ plugin: 'ricky-pixel-mod', key: 'todos' } as const, [])
@@ -47,6 +46,21 @@ const live = {
   hasClock: false, // an in-progress task or a running agent shows a ticking time
   pane: { cols: 0, isLive: false },
   band: undefined as { requestId: string; cols: number; size: BandSize; isLive: boolean } | undefined,
+  isDark: false,
+}
+
+/** Whether Claude Code's theme sits on a dark background; `auto` (match terminal) asks macOS, else assumes dark. */
+async function isDarkTheme($: EngineInterface, theme: unknown): Promise<boolean> {
+  if (typeof theme === 'string' && theme.startsWith('dark')) return true
+  if (typeof theme === 'string' && theme.startsWith('light')) return false
+  try {
+    // macOS: "Dark" in dark mode; the key is missing (non-zero exit) in light mode
+    const { exitCode, stdout } = await $.process.run(['defaults', 'read', '-g', 'AppleInterfaceStyle'], { timeoutMs: 2000 })
+    return exitCode === 0 && stdout.includes('Dark')
+  } catch {
+    // not macOS
+    return true
+  }
 }
 
 async function setMood($: EngineInterface, next: RickyMood, holdMs?: number) {
@@ -108,11 +122,23 @@ export const register: Register = (on, options) => {
   const preferredBand: BandSize | undefined =
     bandPref === 'off' ? undefined : bandPref === 'small' ? 8 : bandPref === 'medium' ? 16 : 24
   live.spinnerWord = t.spinnerWords[0] ?? 'Ricky'
+  // `auto` follows Claude Code's theme; `light` / `dark` pin the colours
+  const colorMode = options.colors === 'light' || options.colors === 'dark' ? options.colors : 'auto'
+  live.isDark = colorMode === 'dark'
+  const c = () => (live.isDark ? DARK : LIGHT)
 
   on('session.start', async ($, e, next) => {
     live.mood = (await read($, moodAtom)) as RickyMood
     live.cwd = await $.session.cwd()
     await refreshClockFlag($)
+    if (colorMode === 'auto') {
+      try {
+        const theme = (await $.config.list()).find(row => row.key === 'theme')?.value
+        live.isDark = await isDarkTheme($, theme)
+      } catch {
+        // no theme row: keep the light colours
+      }
+    }
     await $.command.register({ name: 'ricky', description: t.commandDescription })
     void $.ui.open({ id: PANE, title: '✦ Ricky' })
 
@@ -149,6 +175,15 @@ export const register: Register = (on, options) => {
       live.hasClock = false
     }
     return next(e)
+  })
+
+  on('config.set', { key: 'theme' }, async ($, e, next) => {
+    const set = await next(e)
+    if (colorMode === 'auto' && 'value' in set) {
+      live.isDark = await isDarkTheme($, set.value)
+      $.ui.invalidate('ui.render')
+    }
+    return set
   })
 
   on('command.run', { command: 'ricky' }, async $ => {
@@ -251,6 +286,7 @@ export const register: Register = (on, options) => {
     const agents = (await read($, agentsAtom)) as RickyAgent[]
     const files = (await read($, filesAtom)) as RickyFile[]
     const now = await $.clock.now()
+    const { gold: GOLD, purple: PURPLE, lavender: LAVENDER, rose: ROSE } = c()
 
     const done = todos.filter(t => t.status === 'completed').length
     const bar = progressBar(done, todos.length, Math.max(10, Math.min(26, cols - 24)))
@@ -372,6 +408,6 @@ export const register: Register = (on, options) => {
 
   on('ui.render', { component: 'TurnDuration' }, async ($, e) => {
     const { Text } = $.ui.resolve(e)
-    return <Text color={GOLD}>{t.turnDone(formatElapsed(e.props.durationMs))}</Text>
+    return <Text color={c().gold}>{t.turnDone(formatElapsed(e.props.durationMs))}</Text>
   })
 }

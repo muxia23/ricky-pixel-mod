@@ -6,7 +6,7 @@
 
 <p>
   <a href="https://code.claude.com/docs/en/plugins/mods/create"><img src="https://img.shields.io/badge/Claude_Code-mod-8a5cf0?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code mod"></a>
-  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.3.0-f5c542?style=for-the-badge" alt="version"></a>
+  <a href=".claude-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.4.0-f5c542?style=for-the-badge" alt="version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/code-MIT-b79bff?style=for-the-badge" alt="license"></a>
   <a href="https://github.com/muxia23/ricky-pixel-mod/stargazers"><img src="https://img.shields.io/github/stars/muxia23/ricky-pixel-mod?style=for-the-badge&color=2a1650&logo=github" alt="stars"></a>
 </p>
@@ -123,6 +123,7 @@ Open `/config` and find them under *ricky-pixel-mod*, or set them in `~/.claude/
 | --- | --- |
 | **`language`** | `en` *(default)* English · `zh` 简体中文 |
 | **`bandSize`** | `auto` *(default)* the biggest Ricky that fits · `large` / `medium` / `small` cap it at 24 / 16 / 8 px · `off` no band |
+| **`colors`** | `auto` *(default)* follows Claude Code's theme — brighter colours on dark themes; with *Auto (match terminal)* it asks macOS · `light` / `dark` always use the light- / dark-background colours |
 
 ## 🎨 Make Ricky yours
 
@@ -153,6 +154,12 @@ Your terminal needs truecolor (24-bit) support; most modern terminals have it.
 <summary><b>The band is too tall.</b></summary>
 <br>
 By default it already shrinks to fit. To keep it small for good, set <code>bandSize</code> to <code>small</code> (or <code>off</code>) in <code>/config</code>. To hide it for a moment, collapse it with <code>ctrl+x ctrl+a</code>.
+</details>
+
+<details>
+<summary><b>The colours look off in a dark terminal.</b></summary>
+<br>
+Ricky follows Claude Code's theme. If your terminal is dark but the theme is <code>light</code>, set Theme to <i>Auto (match terminal)</i> or <i>Dark mode</i> in <code>/config</code>, or set <code>colors</code> to <code>dark</code>.
 </details>
 
 <details>
